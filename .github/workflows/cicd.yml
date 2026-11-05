@@ -1,0 +1,30 @@
+name: DevOps CI CD Pipeline
+on:
+  push:
+    branches: [main]
+    paths: ['vle5/**', 'vle4/**']
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: vle5-deploy
+  cancel-in-progress: false
+jobs:
+  build-deploy:
+    runs-on: [self-hosted, linux, x64, vle5]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build application
+        working-directory: vle5
+        run: docker build -t devops-lab-app:${{ github.sha }} ./app
+      - name: Load image into Minikube
+        run: minikube image load devops-lab-app:${{ github.sha }}
+      - name: Deploy two replicas
+        working-directory: vle5
+        run: |
+          kubectl apply -f k8s/service.yml
+          sed 's|devops-lab-app:lab|devops-lab-app:${{ github.sha }}|' k8s/deployment.yml | kubectl apply -f -
+          kubectl rollout status deployment/devops-app --timeout=180s
+          kubectl get pods,services
+      - name: Verify application
+        run: curl --fail "$(minikube service devops-service --url)" | grep 'DevOps CI/CD Virtual Lab'

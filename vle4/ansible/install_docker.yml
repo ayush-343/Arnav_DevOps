@@ -1,0 +1,16 @@
+- name: Configure both VLE4 EC2 instances
+  hosts: servers
+  become: true
+  tasks:
+    - name: Install Docker
+      ansible.builtin.dnf:
+        name: docker
+        state: present
+    - name: Enable and start Docker
+      ansible.builtin.service:
+        name: docker
+        state: started
+        enabled: true
+    - name: Verify Docker
+      ansible.builtin.command: docker --version
+      changed_when: false

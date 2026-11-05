@@ -1,0 +1,9 @@
+**/.terraform/
+**/*.tfstate*
+**/*.tfplan
+**/*.pem
+**/lab-key*
+**/terraform.tfvars
+**/inventory.ini
+**/.kube/
+**/*.log
